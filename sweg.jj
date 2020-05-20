@@ -1,0 +1,36 @@
+/* 											( sweg language )			Team members:								  Name			  ID    Section							 Shahad Qumosani  - 1708315 - IAR							 Esraa Turki      - 1708127 - IAR							 Waad AlShanbari  - 1707637 - IAR							 Ghaidaa AlGhamdi -         - IAR		 	Instructor: 	 Nuha AlNahdi*///--------------------------------------------------------------------------------options{  static = true;}PARSER_BEGIN(sweg)package Project;
+
+public class sweg{  public static void main(String args []) throws ParseException  {    sweg parser = new sweg(System.in);
+    
+    System.out.println("\n~ ~ ~ ~ ~ WELCOME TO SWEG LANGUAGE ~ ~ ~ ~ ~\n");
+    System.out.println("Reading from standard input...\n");
+        while (true)    {      System.out.print("Please enter an expression :");      try      {        switch (sweg.one_line())        {          case 0 :           System.out.println("\n\tSyntactically Correct Statement\n");          break;          case 1 :           System.out.println("Goodbye.");          break;          default :           break;        }      }      catch (Exception e)      {        System.out.println("Incorrect Statement");        System.out.println(e.getMessage());        sweg.ReInit(System.in);      }      catch (Error e)      {        System.out.println("Oops.");        System.out.println(e.getMessage());        break;      }    }  }}PARSER_END(sweg)
+//--------------------------------------------------------------------------------
+
+// Defining language statements as tokens.
+SKIP :{  " "                                // white space| "\r"								 // carriage return| "\t"						         // tab| "\n"								 // newline| < "%" (~["\n", "\r"])* "%" >       // Comment}TOKEN :{  < #LETTER : [ "a"-"z" , "A"-"Z" ] >| < #DIGIT : [ "0"-"9" ] >}TOKEN :{  < STR : (< DIGIT >|< LETTER >)+ >| < INT :(< DIGIT >)+ >| < IDEN : < LETTER > (< DIGIT >|< LETTER >)*"!" >| < FLOAT :(< DIGIT >)+ "." (< DIGIT >)+  >| < LIST: "["(< DIGIT >)+"]" >| < END : ";" >
+|< Constant : "#" (< DIGIT >|< LETTER >)+ >}TOKEN : /* mathematical notation */{  < LEFT_PARANTHESIS : "(" >| < RIGHT_PARANTHESIS : ")" >| < LEFT_BRACKET : "[" >| < RIGHT_BRACKET : "]" >}TOKEN : /* ARITHMETIC OPERATORS */{  < PLUS : "+" >| < MINUS : "-" >| < MULTIPLY : "*" >| < DIVIDE : "~" >| < POWER : "**" >| < INCREMENT : "++" >| < DECREMENT : "--" >| < ASSIGN : "=" >}TOKEN : /* LOGICAL OPERATORS */{  < AND : "@" >| < OR : "?" >| < NOT : "$" >}TOKEN : /* COMPARISON OPERATORS */{  < EQUAL : "==" >| < NOTEQUAL : "/="  >| < LESSTHAN : "<<"  >| < GREATERTHAN : ">>" >}TOKEN : /* CONDITIONAL OPERATORS */{  < IF : "if" >| < ELSE : "else" >| < THEN : "then" >} //--------------------------------------------------------------------------------int one_line() :{}{  statements() < END >			// Enter another expression  {    return 0;  }| < END > 						// Goodbye message  {    return 1;  }}//--------------------------------------------------------------------------------void statements() :
+{
+}
+{  
+  (    LOOKAHEAD(2)
+    Arithmetic_Statements()| Comparison_Statements()| Logical_Statements()| Conditional_Statements()
+  )
+  
+}
+//--------------------------------------------------------------------------------void Arithmetic_Statements() :{}{	LOOKAHEAD(2) 	  // to differentiate between ( * ) multiplication and (**) power 	 	 Term() Arithmetic_Operator() 	 (Term() | < STR > |< FLOAT > |< LIST >) 	 (Arithmetic_Operator() Term() )?  			  // Example: 2 + 3   or   x! ~ y!  or  8 - 3 = 5  or x! = 7 + 2 									  			  //          float -- >   x! =2.3  or string -- >  MyName! = Shahad 							          			  //          List -- >    x! =[2] | 	< IDEN > ( < INCREMENT > | < DECREMENT >  )  // Example:  x!++   means -- > increment identifier x  |   ( < INCREMENT > | < DECREMENT >  ) < IDEN >  // Example:  ++x!     }
+//--------------------------------------------------------------------------------void Comparison_Statements() :{}{  ( Term() Comparison_Operator() Term() )	     // Example: 2 << 3   or   x! == y!   }
+//--------------------------------------------------------------------------------void Logical_Statements() :{}{    ( <LEFT_BRACKET > Comparison_Statements() < RIGHT_BRACKET > Logical_Operator() <LEFT_BRACKET >    Comparison_Statements() < RIGHT_BRACKET >	)                                 // Example: AND -- >  [2 << 3] @ [7 >> 4]  																	              //           OR -- >  [2 << 3] ? [7 >> 4]  | < NOT > <LEFT_BRACKET > Comparison_Statements() < RIGHT_BRACKET >	             // Example: NOT -- > $[ 6 >> 9 ]  or  $[ x! == y! ] }//--------------------------------------------------------------------------------void Conditional_Statements() :{}{      < IF > <LEFT_PARANTHESIS > Comparison_Statements() <RIGHT_PARANTHESIS >    <THEN > Arithmetic_Statements()												 // Example: if (x!==5) then y!=5     ( < ELSE > Arithmetic_Statements() )?                                        // Example: if (x!==5) then y!=5 else y!=3;  }//--------------------------------------------------------------------------------
+void Term() :
+{}
+{
+  (
+    < IDEN >
+  | < INT >
+  )
+ 
+}
+//--------------------------------------------------------------------------------
+void Arithmetic_Operator() : {}{  (  < PLUS >| < MINUS >| < MULTIPLY >| < DIVIDE >| < POWER >| < ASSIGN >  ) }
+
+//--------------------------------------------------------------------------------void Comparison_Operator() : {}{  (  < EQUAL >| < NOTEQUAL >| < LESSTHAN >| < GREATERTHAN >  ) }//--------------------------------------------------------------------------------void Logical_Operator() : {}{  (  < AND >| < OR >  ) }
